@@ -1,4 +1,11 @@
-#include <torch/extension.h>
+// Windows SDK (rpcndr.h) defines 'small' as 'char', which conflicts with
+// PyTorch headers that use 'small' as a parameter name.
+#ifdef small
+#undef small
+#endif
+
+#include <torch/types.h>
+#include <pybind11/pybind11.h>
 #include "ssim.h"
 #include "ssim_fp16.h"
 

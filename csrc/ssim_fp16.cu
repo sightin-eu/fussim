@@ -10,7 +10,14 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <torch/extension.h>
+// Windows SDK (rpcndr.h) defines 'small' as 'char', which conflicts with
+// PyTorch headers that use 'small' as a parameter name.
+#ifdef small
+#undef small
+#endif
+
+#include <torch/types.h>
+#include <ATen/ATen.h>
 #include <cuda_fp16.h>
 #include <cooperative_groups.h>
 #include <c10/cuda/CUDAGuard.h>
