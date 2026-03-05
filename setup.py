@@ -26,7 +26,7 @@ if sys.platform == "win32":
 #
 # Extension naming: fussim._cuda_cu{version} (e.g., fussim._cuda_cu126)
 
-SUPPORTED_CUDA_VARIANTS = ["cu118", "cu121", "cu124", "cu126", "cu128"]
+SUPPORTED_CUDA_VARIANTS = ["cu118", "cu121", "cu124", "cu126", "cu128", "cu130"]
 
 
 def get_cuda_variant_from_torch():
@@ -74,7 +74,7 @@ def find_cuda_home():
 
     # Common Windows paths - check these first as they're most reliable
     if sys.platform == "win32":
-        for cuda_ver in ["12.8", "12.6", "12.4", "12.1", "11.8"]:
+        for cuda_ver in ["13.0", "12.8", "12.6", "12.4", "12.1", "11.8"]:
             path = f"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v{cuda_ver}"
             if os.path.isdir(path):
                 return path
@@ -280,6 +280,7 @@ def get_supported_archs(archs):
         120: "90",  # CUDA 12.0
         128: "100",  # CUDA 12.8 (Blackwell GB100)
         129: "120",  # CUDA 12.9+ (Blackwell GB20x - RTX 5090)
+        130: "120",  # CUDA 13.0 (Blackwell GB20x - RTX 5090)
     }
 
     # Find max supported architecture for this CUDA version
@@ -365,8 +366,8 @@ def get_cuda_variants_to_build():
             variant = f"cu{major}{minor[0]}"
             if variant in SUPPORTED_CUDA_VARIANTS:
                 return [variant]
-        # Last resort: build cu128 (most recent)
-        return ["cu128"]
+        # Last resort: build cu130 (most recent)
+        return ["cu130"]
 
 
 def get_extensions():

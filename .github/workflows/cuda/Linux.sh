@@ -10,7 +10,7 @@ case ${1} in
   cu130)
     CUDA=13.0
     APT_KEY=${OS}-${CUDA/./-}-local
-    FILENAME=cuda-repo-${APT_KEY}_${CUDA}.0-580.54.15-1_amd64.deb
+    FILENAME=cuda-repo-${APT_KEY}_${CUDA}.0-580.65.06-1_amd64.deb
     URL=https://developer.download.nvidia.com/compute/cuda/${CUDA}.0/local_installers
     ;;
   cu128)

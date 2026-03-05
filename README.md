@@ -72,8 +72,8 @@ This installs a **single wheel containing all CUDA variants** (~10MB). At runtim
 
 | Platform | Python | PyTorch | CUDA (auto-detected) |
 |:---------|:------:|:-------:|:---------------------|
-| Linux    | 3.10-3.13 | 2.6 - 2.9 | 11.8, 12.4, 12.6, 12.8 |
-| Windows  | 3.10-3.13 | 2.6 - 2.9 | 11.8, 12.4, 12.6, 12.8 |
+| Linux    | 3.10-3.13 | 2.6 - 2.10 | 11.8, 12.4, 12.6, 12.8, 13.0 |
+| Windows  | 3.10-3.13 | 2.6 - 2.10 | 11.8, 12.4, 12.6, 12.8, 13.0 |
 
 > **PyTorch 2.5 or older?** The fat wheel requires PyTorch 2.6+. For older versions, use [version-specific wheels](#alternative-version-specific-wheels) or [build from source](#build-from-source).
 
@@ -88,8 +88,9 @@ The fat wheel contains extensions built with these PyTorch versions:
 |:-----|:-------------------|:----------------|
 | 11.8 | 2.7.1 | 2.7+ |
 | 12.4 | 2.6.0 | 2.6+ |
-| 12.6 | 2.8.0 (Win) / 2.9.1 (Linux) | 2.8+ (or 2.6+ via cu124 fallback) |
-| 12.8 | 2.8.0 (Win) / 2.9.1 (Linux) | 2.8+ |
+| 12.6 | 2.10.0 | 2.10+ (or 2.6+ via cu124 fallback) |
+| 12.8 | 2.10.0 | 2.10+ |
+| 13.0 | 2.10.0 | 2.10+ |
 
 PyTorch maintains forward ABI compatibility, so extensions built with older versions work with newer PyTorch. If your exact CUDA version isn't compatible, fussim automatically falls back to a compatible variant.
 
@@ -107,35 +108,36 @@ For exact PyTorch ABI matching or smaller downloads (~2MB each), you can install
 ```python
 import torch
 print(f"PyTorch: {torch.__version__}, CUDA: {torch.version.cuda}")
-# Example output: PyTorch: 2.9.1, CUDA: 12.8
+# Example output: PyTorch: 2.10.0, CUDA: 12.8
 ```
 
 **Step 2:** Install the matching wheel:
 ```bash
 # Format: fussim==VERSION+ptXXcuYYY
-# pt29 = PyTorch 2.9, cu128 = CUDA 12.8
+# pt210 = PyTorch 2.10, cu128 = CUDA 12.8
 
-pip install "fussim==0.3.14+pt29cu128" --extra-index-url https://opsiclear.github.io/fussim/whl/
+pip install "fussim==0.3.15+pt210cu128" --extra-index-url https://opsiclear.github.io/fussim/whl/
 ```
 
 <details>
 <summary><b>Available combinations</b></summary>
 
-| PyTorch | Version Tag | CUDA 11.8 | CUDA 12.1 | CUDA 12.4 | CUDA 12.6 | CUDA 12.8 |
-|:-------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|
-| 2.5.1   | `pt25`      | `cu118` | `cu121` | `cu124` | - | - |
-| 2.6.0   | `pt26`      | `cu118` | - | `cu124` | `cu126` | - |
-| 2.7.1   | `pt27`      | `cu118` | - | - | `cu126` | `cu128` |
-| 2.8.0   | `pt28`      | - | - | - | `cu126` | `cu128` |
-| 2.9.1   | `pt29`      | - | - | - | `cu126`* | `cu128`* |
+| PyTorch | Version Tag | CUDA 11.8 | CUDA 12.1 | CUDA 12.4 | CUDA 12.6 | CUDA 12.8 | CUDA 13.0 |
+|:-------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|
+| 2.5.1   | `pt25`      | `cu118` | `cu121` | `cu124` | - | - | - |
+| 2.6.0   | `pt26`      | `cu118` | - | `cu124` | `cu126` | - | - |
+| 2.7.1   | `pt27`      | `cu118` | - | - | `cu126` | `cu128` | - |
+| 2.8.0   | `pt28`      | - | - | - | `cu126` | `cu128` | - |
+| 2.9.1   | `pt29`      | - | - | - | `cu126`* | `cu128`* | `cu130`* |
+| 2.10.0  | `pt210`     | - | - | - | `cu126` | `cu128` | `cu130` |
 
 *Linux only. Windows has a [known PyTorch bug](https://github.com/pytorch/pytorch/issues/141026).
 
 **Examples:**
 ```bash
-pip install "fussim==0.3.14+pt27cu118" --extra-index-url https://opsiclear.github.io/fussim/whl/
-pip install "fussim==0.3.14+pt28cu126" --extra-index-url https://opsiclear.github.io/fussim/whl/
-pip install "fussim==0.3.14+pt29cu128" --extra-index-url https://opsiclear.github.io/fussim/whl/
+pip install "fussim==0.3.15+pt27cu118" --extra-index-url https://opsiclear.github.io/fussim/whl/
+pip install "fussim==0.3.15+pt210cu128" --extra-index-url https://opsiclear.github.io/fussim/whl/
+pip install "fussim==0.3.15+pt210cu130" --extra-index-url https://opsiclear.github.io/fussim/whl/
 ```
 
 **[Interactive Configurator](https://opsiclear.github.io/fussim/)** - generates the exact command for your setup.
@@ -229,7 +231,7 @@ from fussim import get_build_info, check_compatibility
 
 # Check installation details
 info = get_build_info()
-print(info)  # {'version': '0.3.14', 'runtime_torch_version': '2.9.1', ...}
+print(info)  # {'version': '0.3.15', 'runtime_torch_version': '2.10.0', ...}
 
 # Verify compatibility
 compatible, issues = check_compatibility()
@@ -267,7 +269,7 @@ print(f"PyTorch: {torch.__version__}, CUDA: {torch.version.cuda}")
 
 | PyTorch Version | Solution |
 |:----------------|:---------|
-| 2.6 - 2.9 | Should work. Run `pip install --upgrade fussim` |
+| 2.6 - 2.10 | Should work. Run `pip install --upgrade fussim` |
 | 2.5 or older | Use [version-specific wheel](#alternative-version-specific-wheels) or upgrade PyTorch |
 
 </details>
@@ -284,7 +286,7 @@ This is a PyTorch ABI mismatch. The extension was built with a different PyTorch
 python -c "import torch; print(f'PyTorch: {torch.__version__}, CUDA: {torch.version.cuda}')"
 
 # Install matching wheel (example for PyTorch 2.7.1 + CUDA 11.8)
-pip install "fussim==0.3.14+pt27cu118" --extra-index-url https://opsiclear.github.io/fussim/whl/
+pip install "fussim==0.3.15+pt27cu118" --extra-index-url https://opsiclear.github.io/fussim/whl/
 ```
 
 </details>
