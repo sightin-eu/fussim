@@ -88,9 +88,9 @@ The fat wheel contains extensions built with these PyTorch versions:
 |:-----|:-------------------|:----------------|
 | 11.8 | 2.7.1 | 2.7+ |
 | 12.4 | 2.6.0 | 2.6+ |
-| 12.6 | 2.10.0 | 2.10+ (or 2.6+ via cu124 fallback) |
-| 12.8 | 2.10.0 | 2.10+ |
-| 13.0 | 2.10.0 | 2.10+ |
+| 12.6 | 2.8.0 (Win) / 2.10.0 (Linux) | 2.8+ (or 2.6+ via cu124 fallback) |
+| 12.8 | 2.8.0 (Win) / 2.10.0 (Linux) | 2.8+ |
+| 13.0 | 2.10.0 (Linux only) | 2.10+ |
 
 PyTorch maintains forward ABI compatibility, so extensions built with older versions work with newer PyTorch. If your exact CUDA version isn't compatible, fussim automatically falls back to a compatible variant.
 
