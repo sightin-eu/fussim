@@ -1,5 +1,10 @@
 #pragma once
-#include <torch/extension.h>
+
+#ifdef small
+#undef small
+#endif
+
+#include <torch/types.h>
 #include <tuple>
 
 // FP16 forward pass (inference only)

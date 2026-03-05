@@ -1,5 +1,10 @@
 #pragma once
-#include <torch/extension.h>
+
+#ifdef small
+#undef small
+#endif
+
+#include <torch/types.h>
 #include <cstdio>
 #include <tuple>
 #include <string>
