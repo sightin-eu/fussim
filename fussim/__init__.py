@@ -7,6 +7,7 @@ This module provides an optimized implementation of the Structural Similarity In
 
 import re
 import warnings
+from pathlib import Path
 
 import torch
 
@@ -156,6 +157,13 @@ def get_build_info():
     """
     base_version, build_tag = _parse_version(__version__)
     build_torch, build_cuda = _parse_build_tag(build_tag)
+    packaged_variants = [
+        variant
+        for variant in _SUPPORTED_CUDA_VARIANTS
+        for suffix in (".pyd", ".so")
+        if Path(__file__).with_name(f"_cuda_{variant}{suffix}").exists()
+    ]
+    is_fat_wheel = len(packaged_variants) > 1
 
     runtime_torch = torch.__version__.split("+")[0]  # Remove +cu121 suffix if present
     runtime_cuda = torch.version.cuda if torch.cuda.is_available() else None
@@ -167,7 +175,7 @@ def get_build_info():
         "build_cuda_version": build_cuda,
         "runtime_torch_version": runtime_torch,
         "runtime_cuda_version": runtime_cuda,
-        "is_prebuilt": build_tag is not None,
+        "is_prebuilt": build_tag is not None or is_fat_wheel,
     }
 
 

@@ -4,8 +4,7 @@
 #undef small
 #endif
 
-#include <torch/types.h>
-#include <pybind11/pybind11.h>
+#include <torch/extension.h>
 #include "ssim.h"
 #include "ssim_fp16.h"
 
