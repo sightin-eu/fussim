@@ -161,11 +161,22 @@ pip install "fussim==0.3.15+pt210cu130" --extra-index-url https://opsiclear.gith
 
 ```bash
 git clone https://github.com/OpsiClear/fussim.git && cd fussim
-pip install .
+pip install torch==... --index-url https://download.pytorch.org/whl/<cuda>
+pip install --no-build-isolation .
 
 # For specific GPU architecture:
-TORCH_CUDA_ARCH_LIST="8.9" pip install .  # RTX 4090
+TORCH_CUDA_ARCH_LIST="8.9" pip install --no-build-isolation .  # RTX 4090
+
+# Build directly from PyPI source instead of a local checkout:
+pip install torch==... --index-url https://download.pytorch.org/whl/<cuda>
+pip install --no-build-isolation --no-binary fussim fussim
 ```
+
+`pip` build isolation is intentionally rejected for source builds. PyTorch CUDA
+extensions must compile against the target environment's Torch, and pip's
+temporary build env can silently pull in a different Torch/CUDA build. If you
+really did prepare a matching isolated build env, set
+`FUSSIM_ALLOW_BUILD_ISOLATION=1` to override the safeguard.
 
 </details>
 

@@ -39,6 +39,55 @@ def _cuda_variant_to_tuple(variant):
     return (0, 0)
 
 
+def _is_probable_pip_build_isolation():
+    """Best-effort detection for pip's isolated build env.
+
+    PEP 517 build isolation installs build requirements in a temporary
+    environment that may contain a different PyTorch build than the user's
+    target environment. For PyTorch CUDA extensions, that can silently produce
+    ABI-mismatched source builds.
+    """
+    markers = [
+        os.environ.get("PIP_BUILD_TRACKER", ""),
+        sys.prefix,
+        sys.executable,
+        *sys.path,
+    ]
+    return any("pip-build-env" in str(marker).lower() for marker in markers if marker)
+
+
+def _get_torch_build_info():
+    """Return the torch version visible to the build env, if any."""
+    try:
+        import torch
+
+        return torch.__version__, torch.version.cuda
+    except Exception:
+        return None, None
+
+
+def _raise_build_isolation_error():
+    """Abort ambiguous source builds with a prescriptive message."""
+    torch_version, torch_cuda = _get_torch_build_info()
+    torch_summary = "not installed in the build env"
+    if torch_version:
+        torch_summary = f"torch {torch_version} (CUDA {torch_cuda or 'none'}) in the build env"
+
+    raise RuntimeError(
+        "fussim source builds are not supported under pip build isolation because "
+        "PyTorch CUDA extensions must compile against the target environment's "
+        f"Torch, but pip is using {torch_summary}.\n\n"
+        "Install the intended torch build in your environment first, then build "
+        "without isolation:\n"
+        "  pip install torch==... --index-url https://download.pytorch.org/whl/<cuda>\n"
+        "  pip install --no-build-isolation --no-binary fussim fussim\n\n"
+        "For a local checkout, use:\n"
+        "  pip install --no-build-isolation .\n\n"
+        "If you intentionally prepared a matching isolated build env, set "
+        "FUSSIM_ALLOW_BUILD_ISOLATION=1 to override this safeguard."
+    )
+
+
 def get_cuda_variant_from_torch():
     """Detect CUDA version from PyTorch.
 
@@ -140,6 +189,12 @@ def check_cuda_available():
 _building_sdist = "sdist" in sys.argv or "egg_info" in sys.argv
 
 if not _building_sdist:
+    if (
+        os.environ.get("FUSSIM_ALLOW_BUILD_ISOLATION") != "1"
+        and _is_probable_pip_build_isolation()
+    ):
+        _raise_build_isolation_error()
+
     # Auto-detect and set CUDA_HOME if not already set
     _cuda_home = find_cuda_home()
     if _cuda_home:
@@ -385,10 +440,20 @@ def get_cuda_variants_to_build():
         # Fallback: try to detect from nvcc and build single variant
         cuda_ver = get_cuda_version()
         if cuda_ver:
-            major, minor = cuda_ver.split(".")[:2]
-            variant = f"cu{major}{minor[0]}"
-            if variant in SUPPORTED_CUDA_VARIANTS:
-                return [variant]
+            try:
+                major, minor = map(int, cuda_ver.split(".")[:2])
+                runtime = (major, minor)
+            except ValueError:
+                runtime = None
+
+            if runtime is not None:
+                best = None
+                for variant in SUPPORTED_CUDA_VARIANTS:
+                    vt = _cuda_variant_to_tuple(variant)
+                    if vt[0] == runtime[0] and vt <= runtime:
+                        best = variant
+                if best is not None:
+                    return [best]
         # Last resort: build cu130 (most recent)
         return ["cu130"]
 
