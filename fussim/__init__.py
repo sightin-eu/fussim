@@ -87,20 +87,43 @@ _compatibility_checked = False
 _SUPPORTED_CUDA_VARIANTS = ["cu118", "cu121", "cu124", "cu126", "cu128", "cu130"]
 
 
+def _cuda_variant_to_tuple(variant):
+    """Convert a variant string like 'cu128' to a comparable tuple (12, 8)."""
+    nums = variant[2:]  # strip "cu" prefix
+    if len(nums) == 3:
+        return (int(nums[0:2]), int(nums[2]))
+    elif len(nums) == 2:
+        return (int(nums[0]), int(nums[1]))
+    return (0, 0)
+
+
 def _detect_cuda_variant():
-    """Detect CUDA variant from PyTorch runtime."""
+    """Detect CUDA variant from PyTorch runtime.
+
+    Finds the best compatible variant for the runtime CUDA version:
+    1. Exact match if available
+    2. Otherwise, the highest supported variant <= the runtime version
+       (CUDA minor version forward compatibility)
+    """
     try:
         cuda_version = torch.version.cuda
         if cuda_version:
             major, minor = cuda_version.split(".")[:2]
-            # Try exact match first (e.g., cu121 for 12.1)
-            variant = f"cu{major}{minor}"
-            if variant in _SUPPORTED_CUDA_VARIANTS:
-                return variant
-            # Try major + first digit of minor (e.g., cu128 for 12.8)
-            variant = f"cu{major}{minor[0]}"
-            if variant in _SUPPORTED_CUDA_VARIANTS:
-                return variant
+            runtime = (int(major), int(minor))
+
+            # Try exact match first
+            for variant in _SUPPORTED_CUDA_VARIANTS:
+                if _cuda_variant_to_tuple(variant) == runtime:
+                    return variant
+
+            # Find the highest supported variant <= runtime version
+            # Constrain to same major version (no ABI compat across majors)
+            best = None
+            for variant in _SUPPORTED_CUDA_VARIANTS:
+                vt = _cuda_variant_to_tuple(variant)
+                if vt[0] == runtime[0] and vt <= runtime:
+                    best = variant
+            return best
     except Exception:
         pass
     return None
