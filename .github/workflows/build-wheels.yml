@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022]
+        os: [ubuntu-24.04]
         python: ['3.13']
         torch: ['2.8.0', '2.10.0']
         cuda: ['cu128', 'cu130']
@@ -236,9 +236,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022]
-        python: ['3.10', '3.11', '3.12', '3.13']
-        cuda: ['cu118', 'cu124', 'cu126', 'cu128', 'cu130']
+        os: [ubuntu-24.04]
+        python: ['3.13']
+        cuda: ['cu128', 'cu130']
         exclude:
           # Python 3.10 dropped in PyTorch 2.10.0 (Linux cu126/cu128/cu130)
           # On Windows, cu126/cu128 use PyTorch 2.8.0 which supports 3.10
@@ -366,8 +366,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022]
-        python: ['3.10', '3.11', '3.12', '3.13']
+        os: [ubuntu-24.04]
+        python: ['3.13']
 
     steps:
       - name: Checkout repository
