@@ -92,7 +92,15 @@ The fat wheel contains extensions built with these PyTorch versions:
 | 12.8 | 2.8.0 (Win) / 2.10.0 (Linux) | 2.8+ |
 | 13.0 | 2.10.0 (Linux only) | 2.10+ |
 
-PyTorch maintains forward ABI compatibility, so extensions built with older versions work with newer PyTorch. If your exact CUDA version isn't compatible, fussim automatically falls back to a compatible variant.
+PyTorch maintains forward ABI compatibility, so extensions built with older versions work with newer PyTorch.
+
+**CUDA version matching:** fussim uses the highest compatible variant for your runtime CUDA version:
+
+- **Exact match** (e.g., CUDA 12.8 → `cu128`): used directly.
+- **Minor version forward compat** (e.g., CUDA 12.9 → `cu128`): CUDA binaries are forward-compatible within the same major version. If your exact version isn't in the list, fussim picks the nearest lower variant automatically.
+- **Cross-major version** (e.g., CUDA 14.0 with no `cu14x` variant): **not supported**. CUDA does not guarantee ABI compatibility across major versions. You'll need to [build from source](#build-from-source) or wait for a new release.
+
+This means conda-forge users with intermediate CUDA versions (e.g., 12.5, 12.7, 12.9) are fully supported out of the box.
 
 </details>
 
@@ -153,11 +161,22 @@ pip install "fussim==0.3.15+pt210cu130" --extra-index-url https://opsiclear.gith
 
 ```bash
 git clone https://github.com/OpsiClear/fussim.git && cd fussim
-pip install .
+pip install torch==... --index-url https://download.pytorch.org/whl/<cuda>
+pip install --no-build-isolation .
 
 # For specific GPU architecture:
-TORCH_CUDA_ARCH_LIST="8.9" pip install .  # RTX 4090
+TORCH_CUDA_ARCH_LIST="8.9" pip install --no-build-isolation .  # RTX 4090
+
+# Build directly from PyPI source instead of a local checkout:
+pip install torch==... --index-url https://download.pytorch.org/whl/<cuda>
+pip install --no-build-isolation --no-binary fussim fussim
 ```
+
+`pip` build isolation is intentionally rejected for source builds. PyTorch CUDA
+extensions must compile against the target environment's Torch, and pip's
+temporary build env can silently pull in a different Torch/CUDA build. If you
+really did prepare a matching isolated build env, set
+`FUSSIM_ALLOW_BUILD_ISOLATION=1` to override the safeguard.
 
 </details>
 
@@ -307,6 +326,22 @@ from fussim import check_compatibility
 compatible, issues = check_compatibility()
 print(f"Compatible: {compatible}")
 print(f"Issues: {issues}")
+```
+
+</details>
+
+<details>
+<summary><b>Non-standard CUDA version (conda-forge, custom builds)</b></summary>
+
+If your CUDA version doesn't exactly match a pre-built variant (e.g., CUDA 12.5, 12.7, 12.9 from conda-forge), fussim automatically picks the nearest compatible lower variant within the same major version:
+
+```
+CUDA 12.9 → uses cu128    CUDA 12.5 → uses cu124    CUDA 13.1 → uses cu130
+```
+
+If no compatible variant exists for your CUDA major version, build from source:
+```bash
+pip install fussim --no-binary fussim
 ```
 
 </details>
