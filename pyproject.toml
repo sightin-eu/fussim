@@ -4,7 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fussim"
-dynamic = ["version"]
+# Static version so resolvers (uv/pixi) read metadata without building the CUDA extension.
+# Keep in sync with `fussim.__version__`.
+version = "0.3.15"
 description = "Optimized CUDA implementation of differentiable SSIM for PyTorch"
 readme = "README.md"
 license = {text = "MIT"}
@@ -69,9 +71,6 @@ fussim-check = "fussim:_cli_check"
 [tool.setuptools]
 packages = ["fussim"]
 include-package-data = true
-
-[tool.setuptools.dynamic]
-version = {attr = "fussim.__version__"}
 
 [tool.setuptools.package-data]
 "*" = ["*.cu", "*.cpp", "*.h"]
